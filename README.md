@@ -57,7 +57,7 @@ curl -X POST http://localhost:9090/drivers \
   "firstName": "Can",
   "lastName": "Heyal",
   "plate": "34BCH123",
-  "taksiType": "yellow",
+  "taksiType": "sarı",
   "carBrand": "Toyota",
   "carModel": "Corolla",
   "lat": 41.0082,
@@ -76,15 +76,17 @@ Authorization: Bearer BITAKSI-TEST-TOKEN-12345
 curl -X PUT http://localhost:9090/drivers \
 -H "Content-Type: application/json" \
 -d {
-  "firstName": "Burak",
-  "lastName": "Heyal",
-  "plate": "34BCH123",
-  "taksiType": "yellow",
-  "carBrand": "Mercedes",
-  "carModel": "CLA200",
-  "lat": 41.0011,
-  "lon": 28.9900
+  "id": "6935eb0b25c92d2a97825be1",
+  "firstName": "sare",
+  "lastName": "heyal",
+  "plate": "34ABC1234",
+  "taksiType": "siyah",
+  "carBrand": "Kia",
+  "carModel": "bbb",
+  "lat": 41.02,
+  "lon": 28.97
 }
+
 ### Yakınındaki Sürücüler
 Authorization: Bearer BITAKSI-TEST-TOKEN-12345
 ```bash
