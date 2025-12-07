@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bitaksi_burakcanheyal/driver_microservice/internal/application"
 	"bitaksi_burakcanheyal/driver_microservice/internal/domain/model"
 	"bitaksi_burakcanheyal/driver_microservice/platform/validation"
 	"encoding/json"
@@ -20,20 +21,19 @@ func NewDriverGatewayHandler(dc *model.Driver) *DriverGatewayHandler {
 }
 
 // ───────────────────────────────
-// 1) POST /drivers → VALIDASYON OK
+// 1) POST /drivers
 // ───────────────────────────────
 func (h *DriverGatewayHandler) CreateDriver(c *gin.Context) {
 
 	var req validation.AddDriverRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		c.JSON(http.StatusBadRequest, application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
-	// Validation çalıştır
 	if err := validation.ValidateAddDriver(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, application.Wrap(err.Error()))
 		return
 	}
 
@@ -41,31 +41,29 @@ func (h *DriverGatewayHandler) CreateDriver(c *gin.Context) {
 
 	resp, err := h.driverClient.ForwardPost(c.Request.Context(), "/drivers", bodyBytes)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, application.Wrap(err.Error()))
 		return
 	}
-
 	defer resp.Body.Close()
+
 	respBody, _ := io.ReadAll(resp.Body)
 	c.Data(resp.StatusCode, "application/json", respBody)
 }
 
 // ───────────────────────────────
-// 2) PUT /drivers  → VALIDASYON OK
-//
+// 2) PUT /drivers
 // ───────────────────────────────
 func (h *DriverGatewayHandler) UpdateDriver(c *gin.Context) {
 
 	var req validation.UpdateDriverRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		c.JSON(http.StatusBadRequest, application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
-	// Validation
 	if err := validation.ValidateUpdateDriver(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, application.Wrap(err.Error()))
 		return
 	}
 
@@ -76,8 +74,9 @@ func (h *DriverGatewayHandler) UpdateDriver(c *gin.Context) {
 		"/drivers/"+req.ID,
 		bodyBytes,
 	)
+
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, application.Wrap(err.Error()))
 		return
 	}
 
@@ -87,30 +86,30 @@ func (h *DriverGatewayHandler) UpdateDriver(c *gin.Context) {
 }
 
 // ───────────────────────────────
-// 3) GET /drivers?page=&pageSize= → VALIDASYON OK
+// 3) GET /drivers
 // ───────────────────────────────
 func (h *DriverGatewayHandler) ListDrivers(c *gin.Context) {
 
 	pageStr := c.DefaultQuery("page", "1")
-	sizeStr := c.DefaultQuery("pageSize", "10")
+	sizeStr := c.DefaultQuery("pageSize", "5")
 
 	page, _ := strconv.Atoi(pageStr)
 	size, _ := strconv.Atoi(sizeStr)
 
 	if err := validation.ValidateListParams(page, size); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
-	rawQuery := c.Request.URL.RawQuery
 	path := "/drivers"
+	rawQuery := c.Request.URL.RawQuery
 	if rawQuery != "" {
 		path += "?" + rawQuery
 	}
 
 	resp, err := h.driverClient.ForwardGet(c.Request.Context(), path)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, application.Wrap(err.Error()))
 		return
 	}
 
@@ -120,24 +119,19 @@ func (h *DriverGatewayHandler) ListDrivers(c *gin.Context) {
 }
 
 // ───────────────────────────────
-// 4) POST /drivers/nearby → VALIDASYON OK
+// 4) POST /drivers/nearby
 // ───────────────────────────────
 func (h *DriverGatewayHandler) GetNearbyDrivers(c *gin.Context) {
 
 	var req validation.NearbyRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid request body",
-		})
+		c.JSON(http.StatusBadGateway, application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
-	// Validation
 	if err := validation.ValidateNearby(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, application.Wrap(err.Error()))
 		return
 	}
 
@@ -149,7 +143,7 @@ func (h *DriverGatewayHandler) GetNearbyDrivers(c *gin.Context) {
 		bodyBytes,
 	)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, application.Wrap(err.Error()))
 		return
 	}
 

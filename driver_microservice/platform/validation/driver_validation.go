@@ -35,33 +35,33 @@ type NearbyRequest struct {
 func ValidateAddDriver(req AddDriverRequest) error {
 
 	if len(req.FirstName) < 2 {
-		return errors.New("firstName must be at least 2 characters")
+		return errors.New("firstName")
 	}
 
 	if len(req.LastName) < 2 {
-		return errors.New("lastName must be at least 2 characters")
+		return errors.New("lastName")
 	}
 
-	if req.TaxiType != "yellow" && req.TaxiType != "turquoise" && req.TaxiType != "black" {
-		return errors.New("invalid taksiType (allowed: yellow, turquoise, black)")
+	if req.TaxiType != "sarı" && req.TaxiType != "turkuaz" && req.TaxiType != "siyah" {
+		return errors.New("Taksi Tipi Hatası")
 	}
 
 	if req.Lat < -90 || req.Lat > 90 {
-		return errors.New("lat must be between -90 and 90")
+		return errors.New("Koordinat Hatası: Lat")
 	}
 
 	if req.Lon < -180 || req.Lon > 180 {
-		return errors.New("lon must be between -180 and 180")
+		return errors.New("Koordinat Hatası : Lon")
 	}
 
 	return nil
 }
 func ValidateListParams(page, size int) error {
 	if page < 1 {
-		return errors.New("page must be >= 1")
+		return errors.New("page")
 	}
 	if size < 1 || size > 100 {
-		return errors.New("pageSize must be between 1 and 100")
+		return errors.New("pageSize")
 	}
 	return nil
 }
@@ -69,41 +69,41 @@ func ValidateUpdateDriver(req UpdateDriverRequest) error {
 
 	// ID zorunlu
 	if req.ID == "" {
-		return errors.New("id is required")
+		return errors.New("ERR_MISSING_ID")
 	}
 
 	// MongoDB ObjectID format kontrolü
 	if _, err := primitive.ObjectIDFromHex(req.ID); err != nil {
-		return errors.New("id must be valid MongoDB ObjectID")
+		return errors.New("Hatalı ID")
 	}
 
 	// Opsiyonel fakat boş olmaması daha doğru
 	if req.FirstName != "" && len(req.FirstName) < 2 {
-		return errors.New("firstName must be at least 2 characters")
+		return errors.New("firstName")
 	}
 
 	if req.LastName != "" && len(req.LastName) < 2 {
-		return errors.New("lastName must be at least 2 characters")
+		return errors.New("lastName")
 	}
 
 	if req.TaxiType != "" &&
-		req.TaxiType != "yellow" &&
-		req.TaxiType != "turquoise" &&
-		req.TaxiType != "black" {
+		req.TaxiType != "sarı" &&
+		req.TaxiType != "turkuaz" &&
+		req.TaxiType != "siyah" {
 
-		return errors.New("invalid taksiType (allowed: yellow, turquoise, black)")
+		return errors.New("Taksi Tipi Hatası")
 	}
 
 	// Eğer koordinatlar gönderilmişse valid olmalı
 	if req.Lat != 0 {
 		if req.Lat < -90 || req.Lat > 90 {
-			return errors.New("lat must be between -90 and 90")
+			return errors.New("Koordinat Hatası: Lat")
 		}
 	}
 
 	if req.Lon != 0 {
 		if req.Lon < -180 || req.Lon > 180 {
-			return errors.New("lon must be between -180 and 180")
+			return errors.New("Koordinat Hatası : Lon")
 		}
 	}
 
@@ -114,24 +114,24 @@ func ValidateNearby(req NearbyRequest) error {
 
 	// TaxiType kontrolü
 	if req.TaxiType != "" &&
-		req.TaxiType != "yellow" &&
-		req.TaxiType != "turquoise" &&
-		req.TaxiType != "black" {
+		req.TaxiType != "sarı" &&
+		req.TaxiType != "turkuaz" &&
+		req.TaxiType != "siyah" {
 
-		return errors.New("invalid taksiType")
+		return errors.New("Taksi Tipi Hatası")
 	}
 
 	// Lat gönderilmişse valid olmalı
 	if req.Lat != 0 {
 		if req.Lat < -90 || req.Lat > 90 {
-			return errors.New("lat must be between -90 and 90")
+			return errors.New("Koordinat Hatası: Lat")
 		}
 	}
 
 	// Lon gönderilmişse valid olmalı
 	if req.Lon != 0 {
 		if req.Lon < -180 || req.Lon > 180 {
-			return errors.New("lon must be between -180 and 180")
+			return errors.New("Koordinat Hatası : Lon")
 		}
 	}
 

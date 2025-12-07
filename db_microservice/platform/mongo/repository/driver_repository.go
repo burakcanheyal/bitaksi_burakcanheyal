@@ -3,6 +3,7 @@ package repository
 import (
 	"bitaksi_burakcanheyal/db_microservice/internal/domain/entity"
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,7 +28,6 @@ func (r *DriverRepository) Create(ctx context.Context, d *entity.Driver) (string
 	d.CreatedAt = time.Now()
 	d.UpdatedAt = time.Now()
 
-	// ⭐ InsertOne -> GEO JSON location artık doğru formatta
 	res, err := r.collection.InsertOne(ctx, d)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func (r *DriverRepository) Create(ctx context.Context, d *entity.Driver) (string
 }
 
 // ──────────────────────────────────────────────
-// UPDATE
+// UPDATE (Saf document overwrite Yok! FIELD BASED UPDATE)
 // ──────────────────────────────────────────────
 func (r *DriverRepository) Update(ctx context.Context, id string, d *entity.Driver) error {
 
@@ -61,13 +61,78 @@ func (r *DriverRepository) Update(ctx context.Context, id string, d *entity.Driv
 			"taksiType": d.TaxiType,
 			"carBrand":  d.CarBrand,
 			"carModel":  d.CarModel,
-			"location":  d.Location, // ⭐ Burada artık GeoJSON
+			"location":  d.Location, // GeoJSON
 			"updatedAt": d.UpdatedAt,
 		},
 	}
 
-	_, err = r.collection.UpdateByID(ctx, oid, update)
-	return err
+	res, err := r.collection.UpdateByID(ctx, oid, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return errors.New("driver not found")
+	}
+
+	return nil
+}
+
+// ──────────────────────────────────────────────
+// GET BY ID
+// ──────────────────────────────────────────────
+func (r *DriverRepository) GetByID(ctx context.Context, id string) (*entity.Driver, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var driver entity.Driver
+	err = r.collection.FindOne(ctx, bson.M{"_id": oid}).Decode(&driver)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &driver, nil
+}
+
+// ──────────────────────────────────────────────
+// FIND BY PLATE (Unique Check İçin)
+// ──────────────────────────────────────────────
+func (r *DriverRepository) FindByPlate(ctx context.Context, plate string) (*entity.Driver, error) {
+
+	var driver entity.Driver
+	err := r.collection.FindOne(ctx, bson.M{"plate": plate}).Decode(&driver)
+
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &driver, nil
+}
+
+// ──────────────────────────────────────────────
+// EXISTS BY ID (Performanslı existence check)
+// ──────────────────────────────────────────────
+func (r *DriverRepository) ExistsByID(ctx context.Context, id string) (bool, error) {
+
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, err
+	}
+
+	count, err := r.collection.CountDocuments(ctx, bson.M{"_id": oid})
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 // ──────────────────────────────────────────────
@@ -96,7 +161,7 @@ func (r *DriverRepository) List(ctx context.Context, page, pageSize int) ([]enti
 }
 
 // ──────────────────────────────────────────────
-// LIST ALL (No Pagination)
+// LIST ALL
 // ──────────────────────────────────────────────
 func (r *DriverRepository) ListAll(ctx context.Context) ([]entity.Driver, error) {
 

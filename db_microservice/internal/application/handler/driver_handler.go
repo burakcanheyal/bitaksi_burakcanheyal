@@ -1,11 +1,11 @@
 package handler
 
 import (
+	"bitaksi_burakcanheyal/db_microservice/internal/application"
 	"bitaksi_burakcanheyal/db_microservice/internal/domain/dto"
 	"bitaksi_burakcanheyal/db_microservice/internal/domain/service"
 	"context"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -18,15 +18,12 @@ func NewDriverHandler(s *service.DriverService) *DriverHandler {
 	return &DriverHandler{service: s}
 }
 
-// ──────────────────────────── CREATE ────────────────────────────
+// CREATE
 func (h *DriverHandler) CreateDriver(c *gin.Context) {
 	var req dto.CreateDriverRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid request body",
-			"detail": err.Error(),
-		})
+		c.Error(application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
@@ -35,28 +32,25 @@ func (h *DriverHandler) CreateDriver(c *gin.Context) {
 
 	id, err := h.service.CreateDriver(ctx, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.CreateDriverResponse{ID: id})
+	c.JSON(201, dto.CreateDriverResponse{ID: id})
 }
 
-// ──────────────────────────── UPDATE ────────────────────────────
+// UPDATE
 func (h *DriverHandler) UpdateDriver(c *gin.Context) {
-	var req dto.UpdateDriverRequest
-	id := c.Param("id")
 
+	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing driver id"})
+		c.Error(application.ErrMissingID)
 		return
 	}
 
+	var req dto.UpdateDriverRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid request body",
-			"detail": err.Error(),
-		})
+		c.Error(application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
@@ -64,54 +58,53 @@ func (h *DriverHandler) UpdateDriver(c *gin.Context) {
 	defer cancel()
 
 	if err := h.service.UpdateDriver(ctx, id, req); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "updated"})
+	c.JSON(200, gin.H{"status": "updated"})
 }
 
-// ──────────────────────────── LIST ────────────────────────────
+// LIST
 func (h *DriverHandler) ListDrivers(c *gin.Context) {
+
 	pageStr := c.Query("page")
 	sizeStr := c.Query("pageSize")
 
 	page, err1 := strconv.Atoi(pageStr)
-	pageSize, err2 := strconv.Atoi(sizeStr)
+	size, err2 := strconv.Atoi(sizeStr)
 
 	if err1 != nil || page < 1 {
 		page = 1
 	}
-	if err2 != nil || pageSize < 1 {
-		pageSize = 20
+	if err2 != nil || size < 1 {
+		size = 20
 	}
 
-	drivers, err := h.service.ListDrivers(c.Request.Context(), page, pageSize)
+	drivers, err := h.service.ListDrivers(c.Request.Context(), page, size)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, drivers)
+	c.JSON(200, drivers)
 }
 
-// ──────────────────────────── NEARBY ────────────────────────────
+// NEARBY
 func (h *DriverHandler) GetNearbyDrivers(c *gin.Context) {
+
 	var req dto.NearbyDriverRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid request body",
-			"detail": err.Error(),
-		})
+		c.Error(application.Wrap("ERR_BAD_REQUEST"))
 		return
 	}
 
 	result, err := h.service.GetNearbyDrivers(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(200, result)
 }

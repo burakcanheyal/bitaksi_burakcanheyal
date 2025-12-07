@@ -9,19 +9,20 @@ import (
 
 func RegisterGatewayRoutes(r *gin.Engine, h *handler.DriverGatewayHandler, log *handler.LogHandler) {
 
+	rateLimiter := middleware.NewAPIKeyRateLimiter(60, 100) // dk’da 60 token, burst 100
+
 	g := r.Group("/drivers")
 
 	g.Use(middleware.JwtAuthMiddleware())
+	g.Use(rateLimiter.Middleware()) // ⭐ RATE LIMITER
 	g.Use(middleware.RequestLogger())
 
-	// CRUD + Nearby
 	g.POST("", h.CreateDriver)
-	g.PUT("/", h.UpdateDriver)
+	g.PUT("", h.UpdateDriver)
 	g.GET("", h.ListDrivers)
 	g.POST("/nearby", h.GetNearbyDrivers)
 
 	internal := r.Group("/internal")
 	internal.Use(middleware.JwtAuthMiddleware())
 	internal.GET("/logs", log.GetLogs)
-
 }
