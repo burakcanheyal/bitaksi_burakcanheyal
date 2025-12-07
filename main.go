@@ -9,7 +9,7 @@ import (
 
 func main() {
 	dbSrv := cmd.Db_Setup()
-	testSrv := gateway.TestSetup()
+	testSrv := gateway.GatewaySetup()
 
 	// Driver Service → 8080
 	go func() {
@@ -19,13 +19,13 @@ func main() {
 		}
 	}()
 
-	// Test Service → 9090
+	// Gateway Service → 9090
 	go func() {
-		log.Println("[Test-Service] running on :9090")
+		log.Println("[Gateway-Service] running on :9090")
 		if err := testSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("test error: %v", err)
 		}
 	}()
 
-	select {} // keep alive
+	select {} // canlı tutmak için
 }

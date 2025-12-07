@@ -29,7 +29,6 @@ func (d *Driver) ForwardPost(ctx context.Context, path string, body []byte) (*ht
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// ⭐ Internal API Key ekleme
 	req.Header.Set("X-INTERNAL-KEY", InternalAPIKey)
 
 	return d.client.Do(req)

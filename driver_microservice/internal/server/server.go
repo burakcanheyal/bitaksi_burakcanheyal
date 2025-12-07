@@ -9,12 +9,12 @@ import (
 
 func RegisterGatewayRoutes(r *gin.Engine, h *handler.DriverGatewayHandler, log *handler.LogHandler) {
 
-	rateLimiter := middleware.NewAPIKeyRateLimiter(60, 100) // dk’da 60 token, burst 100
+	rateLimiter := middleware.NewAPIKeyRateLimiter(60, 500) // dk’da 60 token, burst 100
 
 	g := r.Group("/drivers")
 
 	g.Use(middleware.JwtAuthMiddleware())
-	g.Use(rateLimiter.Middleware()) // ⭐ RATE LIMITER
+	g.Use(rateLimiter.Middleware())
 	g.Use(middleware.RequestLogger())
 
 	g.POST("", h.CreateDriver)

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TestSetup() *http.Server {
+func GatewaySetup() *http.Server {
 
 	driverClient := model.NewDriverClient("http://localhost:8080")
 

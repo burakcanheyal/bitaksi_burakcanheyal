@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   mongo:
     image: mongo:latest
@@ -5,3 +7,16 @@ services:
     restart: always
     ports:
       - "27017:27017"
+
+
+# Uygulama ayağa kalkıyor fakat iki servis içi iletişim olmuyor
+# bu sebepten ötürü db ye bağlanılmıyor ilhili dönütler alınmıyor
+  #bitaksi-app:
+   # build: .
+    #container_name: bitaksi-app
+    #depends_on:
+    #  - mongo
+    #ports:
+     # - "9090:9090"   # sadece Gateway portu host'a açılıyor
+    #environment:
+    #  - GIN_MODE=release

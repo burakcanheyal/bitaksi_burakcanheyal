@@ -62,10 +62,6 @@ func (rl *APIKeyRateLimiter) getVisitor(key string) *Visitor {
 
 func (rl *APIKeyRateLimiter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		// -----------------------
-		// 1) Authorization header kontrolü
-		// -----------------------
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
 			c.JSON(401, gin.H{"error": "missing Authorization header"})
@@ -82,14 +78,8 @@ func (rl *APIKeyRateLimiter) Middleware() gin.HandlerFunc {
 
 		apiKey := parts[1]
 
-		// -----------------------
-		// 2) API key için bucket al
-		// -----------------------
 		visitor := rl.getVisitor(apiKey)
 
-		// -----------------------
-		// 3) rate limit enforcement
-		// -----------------------
 		if visitor.tokens <= 0 {
 			c.JSON(429, gin.H{
 				"error": "rate limit exceeded for this API key",
