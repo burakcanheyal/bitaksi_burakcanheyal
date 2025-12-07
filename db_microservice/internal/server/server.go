@@ -11,6 +11,6 @@ func RegisterRoutes(r *gin.Engine, driverHandler *handler.DriverHandler) {
 		driver.POST("", driverHandler.CreateDriver)
 		driver.PUT("/:id", driverHandler.UpdateDriver)
 		driver.GET("", driverHandler.ListDrivers)
-		driver.GET("/nearby", driverHandler.GetNearbyDrivers)
+		driver.POST("/nearby", driverHandler.GetNearbyDrivers)
 	}
 }

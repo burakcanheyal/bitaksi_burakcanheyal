@@ -16,9 +16,9 @@ func RegisterGatewayRoutes(r *gin.Engine, h *handler.DriverGatewayHandler, log *
 
 	// CRUD + Nearby
 	g.POST("", h.CreateDriver)
-	g.PUT("/:id", h.UpdateDriver)
+	g.PUT("/", h.UpdateDriver)
 	g.GET("", h.ListDrivers)
-	g.GET("/nearby", h.GetNearbyDrivers)
+	g.POST("/nearby", h.GetNearbyDrivers)
 
 	internal := r.Group("/internal")
 	internal.Use(middleware.JwtAuthMiddleware())

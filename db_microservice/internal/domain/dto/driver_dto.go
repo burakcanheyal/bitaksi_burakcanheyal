@@ -59,11 +59,10 @@ type DriverListResponse struct {
 // ──────────────────── NEARBY ────────────────────
 //
 
-// Query param DTO (Gin için uygun: form tag)
 type NearbyDriverRequest struct {
-	Lat      float64 `form:"lat" binding:"required"`
-	Lon      float64 `form:"lon" binding:"required"`
-	TaxiType string  `form:"taksiType" binding:"required"`
+	Lat      float64 `json:"lat" binding:"required"`
+	Lon      float64 `json:"lon" binding:"required"`
+	TaxiType string  `json:"taksiType" binding:"required"`
 }
 
 // OUTPUT DTO — burada lat/lon yok, sadece distance istenmiş

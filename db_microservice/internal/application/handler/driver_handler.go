@@ -99,24 +99,19 @@ func (h *DriverHandler) ListDrivers(c *gin.Context) {
 func (h *DriverHandler) GetNearbyDrivers(c *gin.Context) {
 	var req dto.NearbyDriverRequest
 
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid query params",
+			"error":  "invalid request body",
 			"detail": err.Error(),
 		})
 		return
 	}
 
-	if req.TaxiType == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "taksiType is required"})
-		return
-	}
-
-	drivers, err := h.service.GetNearbyDrivers(c.Request.Context(), req)
+	result, err := h.service.GetNearbyDrivers(c.Request.Context(), req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, drivers)
+	c.JSON(http.StatusOK, result)
 }
